@@ -36,8 +36,13 @@ public class Playercontroll : MonoBehaviour
     [SerializeField, Tooltip("ˆÚ“®‘¬“x")]
     private float _MoveSpeed = 10.0f;
 
+    [SerializeField, Tooltip("‰ñ“]‘¬“x")]
+    private float _TurnSpeed = 10.0f;
+
     [SerializeField, Tooltip("‘Ì—Í")]
     private float _HP=500;
+
+    
 
     [SerializeField]
     private Rigidbody _RigidBody=null;
@@ -201,21 +206,16 @@ public class Playercontroll : MonoBehaviour
     //Player‚ÌŒü‚«Œˆ’è
     private void RotationMove(float h1,float v1)
     {
-        var cameraForward = Vector3.Scale(_CameraTransform.forward, new Vector3(1, 0, 1)).normalized;
 
 
         if (h1 != 0 || v1 != 0)
         {
-            /* Vector3 direction = cameraForward * v1 + _CameraTransform.right * h1;
-             Quaternion targetRotation = Quaternion.LookRotation(direction - this.transform.position);
-             this.transform.localRotation = Quaternion.Slerp(targetRotation,transform.rotation,Time.deltaTime*0.5f);*/
-
 
             Vector3 target = new Vector3(h1, 0.0f, v1);
 
             //‘Ì‚ÌŒü‚«‚ð•Ï‰»
             Quaternion rotation = Quaternion.LookRotation(target);
-            transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * 10.0f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * _TurnSpeed);
         }
     }
 
