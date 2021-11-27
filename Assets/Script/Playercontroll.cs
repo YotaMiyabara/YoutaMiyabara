@@ -128,6 +128,7 @@ public class Playercontroll : MonoBehaviour
             if (_MainWeponList[i] != 0)
             {
                 _UseMainWepon.Add(new Trigger(Instantiate(SerchWepon(_MainWeponList[i]), transform.position, Quaternion.identity)));
+                _UseMainWepon[i].Obj.transform.parent=this.transform;
             }
 
             if (_SubWeponList[i] != 0)
@@ -229,13 +230,9 @@ public class Playercontroll : MonoBehaviour
         {
             _UseMainWepon[_MainWeponCounter].State.SetState(WeponStateEnum.Set_1);
 
-            var PlayerForward = Vector3.Scale(this.transform.forward, new Vector3(1, 0, 1)).normalized;
 
             //位置を設定
-            Vector3 pos = PlayerForward + transform.position;
-            pos.y += 1.0f;
-            pos.z += 1.0f;
-            _UseMainWepon[_MainWeponCounter].Obj.transform.position = pos;
+            WeponOffsetPos(0);
         }
     }
 
@@ -289,6 +286,28 @@ public class Playercontroll : MonoBehaviour
 
     }
 
+    private void WeponOffsetPos(int right)//Mainなら右＝0、Subなら左＝1
+    {
+        float[] table =new float[2]{ 1.5f,-1};
+
+        Vector3 Offset = new Vector3(table[right], 1.0f, 1.0f);
+
+        var myForward = this.transform.forward;
+
+        switch (_MainWeponList[_MainWeponCounter]%100)
+        {
+            case 1:
+                {
+                    _UseMainWepon[_MainWeponCounter].Obj.transform.localPosition=Offset;
+                }
+                break;
+            default:
+                break;
+        }
+
+    }
+
+
     //==========================================================================================
     //==========================================================================================
     //アニメーション
@@ -305,6 +324,11 @@ public class Playercontroll : MonoBehaviour
 
     private void TriggerMotionAnim(int id)
     {
+        if (Input.GetAxisRaw("Vertical")!=0|| Input.GetAxisRaw("Horizontal") != 0)
+        {
+            return;
+        }
+
         id = id % 100;
         switch (id)
         {
