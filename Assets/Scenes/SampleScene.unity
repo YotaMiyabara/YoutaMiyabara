@@ -373,7 +373,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _Player: {fileID: 731945313}
-  _TurnSpeed: 1
+  _TurnSpeed: 0.5
 --- !u!1001 &1136075387
 PrefabInstance:
   m_ObjectHideFlags: 0

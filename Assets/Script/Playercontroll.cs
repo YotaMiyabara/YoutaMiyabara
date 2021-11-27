@@ -10,7 +10,6 @@ public class Trigger
     public GameObject Obj;
     public WeponState State;
 
-
     public Trigger(GameObject obj)
     {
         this.Obj = obj;
@@ -40,12 +39,12 @@ public class Playercontroll : MonoBehaviour
     private float _TurnSpeed = 10.0f;
 
     [SerializeField, Tooltip("体力")]
-    private float _HP=500;
+    private float _HP = 500;
 
-    
+
 
     [SerializeField]
-    private Rigidbody _RigidBody=null;
+    private Rigidbody _RigidBody = null;
 
     [SerializeField]
     private Animator _Animetor = null;
@@ -55,7 +54,7 @@ public class Playercontroll : MonoBehaviour
     public WeponDataList _weponList;
 
 
-    private StateEnum _State=StateEnum.Non;
+    private StateEnum _State = StateEnum.Non;
 
     private Transform _CameraTransform;
 
@@ -72,9 +71,9 @@ public class Playercontroll : MonoBehaviour
     private List<int> _SubWeponList = new List<int>(4);
 
     [SerializeField]
-    private List<Trigger> _UseMainWepon=new List<Trigger>();
+    private List<Trigger> _UseMainWepon = new List<Trigger>();
 
-    private List<GameObject> _UseSubWepon=new List<GameObject>();
+    private List<GameObject> _UseSubWepon = new List<GameObject>();
 
     #endregion
 
@@ -87,7 +86,7 @@ public class Playercontroll : MonoBehaviour
         SetWepon();
     }
 
-    
+
     void Update()
     {
         switch (_State)
@@ -109,7 +108,7 @@ public class Playercontroll : MonoBehaviour
                 break;
         }
 
-         
+
 
 
     }
@@ -124,12 +123,11 @@ public class Playercontroll : MonoBehaviour
     private void SetWepon()
     {
 
-        for(int i = 0; i < 4; ++i)
+        for (int i = 0; i < 4; ++i)
         {
             if (_MainWeponList[i] != 0)
             {
                 _UseMainWepon.Add(new Trigger(Instantiate(SerchWepon(_MainWeponList[i]), transform.position, Quaternion.identity)));
-                //_UseMainWepon[i].transform.parent = this.transform;
             }
 
             if (_SubWeponList[i] != 0)
@@ -137,19 +135,19 @@ public class Playercontroll : MonoBehaviour
                 _UseSubWepon.Add(Instantiate(SerchWepon(_SubWeponList[i]), transform.position, Quaternion.identity));
                 _UseSubWepon[i].transform.parent = this.transform;
             }
-            
-           
+
+
         }
 
     }
 
     private GameObject SerchWepon(int id)
     {
-        foreach (Wepon w in _weponList.wepons)
+        foreach (Wepon w in _weponList.wepons)//武器リストから検索
         {
             if (id == w.GetID())
             {
-                string path ="Prefab/"+w.GetName() + "_Prefab";
+                string path = "Prefab/" + w.GetName() + "_Prefab";
                 //読み込み処理
                 var obj = Resources.Load<GameObject>(path);
                 if (obj == null)
@@ -173,7 +171,7 @@ public class Playercontroll : MonoBehaviour
     //Playerの操作
     private void PlayerControll()
     {
-        var cameraForward=Vector3.Scale(_CameraTransform.forward,new Vector3(1,0,1)).normalized;
+
 
         ///移動
 
@@ -183,9 +181,15 @@ public class Playercontroll : MonoBehaviour
         //左右
         float Hori = Input.GetAxisRaw("Horizontal");
 
-        RunAnime(Ver, Hori);
-        RotationMove(Hori, Ver);
-        _RigidBody.PlayerControll(Hori, Ver, _MoveSpeed);
+        var AnimeMotion = _Animetor.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+
+        if (AnimeMotion == "Stand" || AnimeMotion == "Run")
+        {
+            _RigidBody.PlayerControll(Hori, Ver, _MoveSpeed);
+            RunAnime(Ver, Hori);
+            RotationMove(Hori, Ver);
+        }
+        
 
         ///Main攻撃
         MainOn();
@@ -204,31 +208,31 @@ public class Playercontroll : MonoBehaviour
     }
 
     //Playerの向き決定
-    private void RotationMove(float h1,float v1)
+    private void RotationMove(float h1, float v1)
     {
-
+        var cameraForward = Vector3.Scale(_CameraTransform.forward, new Vector3(1, 0, 1)).normalized;
 
         if (h1 != 0 || v1 != 0)
         {
-
-            Vector3 target = new Vector3(h1, 0.0f, v1);
+            //カメラの向きから移動方向を決定
+            Vector3 moveForward = cameraForward * v1 + Camera.main.transform.right * h1;
 
             //体の向きを変化
-            Quaternion rotation = Quaternion.LookRotation(target);
+            Quaternion rotation = Quaternion.LookRotation(moveForward);
             transform.rotation = Quaternion.Lerp(transform.rotation, rotation, Time.deltaTime * _TurnSpeed);
         }
     }
 
     private void MainOn()
     {
-        if(Input.GetKeyDown("joystick button 7")&&_UseMainWepon[_MainWeponCounter].State.GetState()==WeponStateEnum.Non)
+        if (Input.GetKeyDown("joystick button 7") && _UseMainWepon[_MainWeponCounter].State.GetState() == WeponStateEnum.Non)
         {
             _UseMainWepon[_MainWeponCounter].State.SetState(WeponStateEnum.Set_1);
 
             var PlayerForward = Vector3.Scale(this.transform.forward, new Vector3(1, 0, 1)).normalized;
 
             //位置を設定
-            Vector3 pos = PlayerForward+transform.position;
+            Vector3 pos = PlayerForward + transform.position;
             pos.y += 1.0f;
             pos.z += 1.0f;
             _UseMainWepon[_MainWeponCounter].Obj.transform.position = pos;
@@ -238,16 +242,17 @@ public class Playercontroll : MonoBehaviour
 
     private void MainShot()
     {
-        if(Input.GetKeyDown("joystick button 3")&& _UseMainWepon[_MainWeponCounter].State.GetState() == WeponStateEnum.Set_2)
+        if (Input.GetKeyDown("joystick button 3") && _UseMainWepon[_MainWeponCounter].State.GetState() == WeponStateEnum.Set_2)
         {
             _UseMainWepon[_MainWeponCounter].State.SetState(WeponStateEnum.Shot);
+            TriggerMotionAnim(_MainWeponList[_MainWeponCounter]);
         }
 
     }
 
     private void SubOn()
     {
-        if (Input.GetKeyDown("joystick button 6")&& _UseSubWepon[_SubWeponCounter].GetComponent<WeponState>().GetState() == WeponStateEnum.Non)
+        if (Input.GetKeyDown("joystick button 6") && _UseSubWepon[_SubWeponCounter].GetComponent<WeponState>().GetState() == WeponStateEnum.Non)
         {
             _UseSubWepon[_SubWeponCounter].GetComponent<WeponState>().SetState(WeponStateEnum.Set_1);
         }
@@ -255,7 +260,7 @@ public class Playercontroll : MonoBehaviour
 
     private void SubShot()
     {
-        if (Input.GetKeyDown("joystick button 0")&& _UseSubWepon[_SubWeponCounter].GetComponent<WeponState>().GetState() == WeponStateEnum.Set_2)
+        if (Input.GetKeyDown("joystick button 0") && _UseSubWepon[_SubWeponCounter].GetComponent<WeponState>().GetState() == WeponStateEnum.Set_2)
         {
             _UseSubWepon[_SubWeponCounter].GetComponent<WeponState>().SetState(WeponStateEnum.Shot);
         }
@@ -277,7 +282,7 @@ public class Playercontroll : MonoBehaviour
             CounterUp(ref _MainWeponCounter);
         }
         //サブ武器
-        if(Input.GetKeyDown("joystick button 4"))
+        if (Input.GetKeyDown("joystick button 4"))
         {
             CounterUp(ref _SubWeponCounter);
         }
@@ -288,7 +293,7 @@ public class Playercontroll : MonoBehaviour
     //==========================================================================================
     //アニメーション
 
-    private void RunAnime(float x,float y)
+    private void RunAnime(float x, float y)
     {
         _Animetor.SetBool("IsRun", false);
 
@@ -298,11 +303,28 @@ public class Playercontroll : MonoBehaviour
         }
     }
 
+    private void TriggerMotionAnim(int id)
+    {
+        id = id % 100;
+        switch (id)
+        {
+            case 1:
+                {
+                    _Animetor.Play("ShotMotion");
+                    _RigidBody.velocity = new Vector3(0, 0, 0);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+
     #endregion
 
 
     #region コルーチン
-   
+
 
     #endregion
 
