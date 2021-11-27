@@ -324,12 +324,13 @@ public class Playercontroll : MonoBehaviour
 
     private void TriggerMotionAnim(int id)
     {
+        //ˆÚ“®’†‚È‚ç‚±‚±‚ÅI‚í‚è
         if (Input.GetAxisRaw("Vertical")!=0|| Input.GetAxisRaw("Horizontal") != 0)
         {
             return;
         }
 
-        id = id % 100;
+        id = id % 100;//ID‚Ì•S‚ÌˆÊ‚ÅU‚è•ª‚¯
         switch (id)
         {
             case 1:
